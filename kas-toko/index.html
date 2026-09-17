@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>Kas Toko</title>
+<style>
+  :root{
+    --bg:#f4f5f7;
+    --surface:#ffffff;
+    --surface-2:#f0f1f4;
+    --text:#1c1e21;
+    --muted:#6b7280;
+    --border:#e3e5e9;
+    --primary:#2563eb;
+    --primary-dark:#1d4ed8;
+    --green:#16a34a;
+    --green-bg:#e8f7ee;
+    --red:#dc2626;
+    --red-bg:#fdecec;
+    --amber:#b45309;
+    --amber-bg:#fef3e0;
+    --radius:14px;
+    --shadow:0 1px 2px rgba(20,20,30,.06), 0 4px 14px rgba(20,20,30,.05);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#15171c;
+      --surface:#1e2128;
+      --surface-2:#262a33;
+      --text:#eceef1;
+      --muted:#9aa1ab;
+      --border:#33373f;
+      --primary:#3b82f6;
+      --primary-dark:#60a5fa;
+      --green:#34d399;
+      --green-bg:#123a26;
+      --red:#f87171;
+      --red-bg:#3d1717;
+      --amber:#fbbf24;
+      --amber-bg:#3a2c0d;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#15171c;
+    --surface:#1e2128;
+    --surface-2:#262a33;
+    --text:#eceef1;
+    --muted:#9aa1ab;
+    --border:#33373f;
+    --primary:#3b82f6;
+    --primary-dark:#60a5fa;
+    --green:#34d399;
+    --green-bg:#123a26;
+    --red:#f87171;
+    --red-bg:#3d1717;
+    --amber:#fbbf24;
+    --amber-bg:#3a2c0d;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    padding-bottom:76px;
+  }
+  .wrap{max-width:640px;margin:0 auto;padding:16px;}
+  header.app-header{
+    max-width:640px;margin:0 auto;padding:16px 16px 0;
+    display:flex;align-items:center;justify-content:space-between;gap:8px;
+  }
+  .brand{display:flex;flex-direction:column;gap:2px;min-width:0;}
+  .brand h1{font-size:17px;margin:0;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .brand .datetime{font-size:12.5px;color:var(--muted);}
+  .icon-btn{
+    background:var(--surface);border:1px solid var(--border);border-radius:10px;
+    width:38px;height:38px;display:flex;align-items:center;justify-content:center;
+    color:var(--text);cursor:pointer;flex-shrink:0;
+  }
+  .card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    padding:16px;
+    margin-bottom:14px;
+  }
+  .card h2{margin:0 0 12px;font-size:15px;font-weight:700;}
+  .shift-badge{
+    display:inline-flex;align-items:center;gap:6px;
+    background:var(--primary);color:#fff;font-weight:700;font-size:12.5px;
+    padding:4px 10px;border-radius:999px;
+  }
+  .shift-badge.closed{background:var(--muted);}
+  label{display:block;font-size:13px;color:var(--muted);margin:0 0 6px;font-weight:600;}
+  input[type=text], input[type=number], select, textarea{
+    width:100%;padding:11px 12px;border-radius:10px;border:1px solid var(--border);
+    background:var(--surface-2);color:var(--text);font-size:15px;font-family:inherit;
+    outline:none;
+  }
+  input:focus, select:focus, textarea:focus{border-color:var(--primary);}
+  .field{margin-bottom:12px;}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:6px;
+    padding:12px 16px;border-radius:10px;border:none;font-size:15px;font-weight:700;
+    cursor:pointer;width:100%;
+  }
+  .btn-primary{background:var(--primary);color:#fff;}
+  .btn-primary:active{background:var(--primary-dark);}
+  .btn-outline{background:transparent;border:1px solid var(--border);color:var(--text);}
+  .btn-danger{background:var(--red);color:#fff;}
+  .btn-ghost{background:var(--surface-2);color:var(--text);}
+  .btn-sm{padding:8px 12px;font-size:13px;width:auto;}
+  .seg{display:flex;background:var(--surface-2);border-radius:10px;padding:4px;gap:4px;margin-bottom:14px;}
+  .seg button{
+    flex:1;padding:10px;border:none;background:transparent;border-radius:8px;
+    font-weight:700;font-size:14px;color:var(--muted);cursor:pointer;
+  }
+  .seg button.active.in{background:var(--green-bg);color:var(--green);}
+  .seg button.active.out{background:var(--red-bg);color:var(--red);}
+  .summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+  .stat{
+    background:var(--surface-2);border-radius:12px;padding:12px;
+  }
+  .stat .label{font-size:12px;color:var(--muted);font-weight:600;margin-bottom:4px;}
+  .stat .value{font-size:17px;font-weight:800;}
+  .stat.balance{grid-column:1/-1;background:var(--primary);color:#fff;}
+  .stat.balance .label{color:rgba(255,255,255,.85);}
+  .stat.balance .value{font-size:24px;}
+  .tx-item{
+    display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--border);
+  }
+  .tx-item:last-child{border-bottom:none;}
+  .tx-dot{
+    width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;
+    font-weight:800;font-size:15px;flex-shrink:0;
+  }
+  .tx-dot.in{background:var(--green-bg);color:var(--green);}
+  .tx-dot.out{background:var(--red-bg);color:var(--red);}
+  .tx-info{flex:1;min-width:0;}
+  .tx-info .desc{font-size:14.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .tx-info .meta{font-size:12px;color:var(--muted);}
+  .tx-amount{font-weight:800;font-size:14.5px;white-space:nowrap;}
+  .tx-amount.in{color:var(--green);}
+  .tx-amount.out{color:var(--red);}
+  .tx-del{background:none;border:none;color:var(--muted);cursor:pointer;padding:4px;font-size:16px;}
+  .empty{text-align:center;color:var(--muted);font-size:13.5px;padding:24px 8px;}
+  .tabbar{
+    position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);
+    display:flex;padding:6px 8px calc(6px + env(safe-area-inset-bottom));z-index:20;
+  }
+  .tabbar button{
+    flex:1;background:none;border:none;color:var(--muted);display:flex;flex-direction:column;
+    align-items:center;gap:2px;font-size:11px;font-weight:600;padding:6px 0;cursor:pointer;border-radius:10px;
+  }
+  .tabbar button.active{color:var(--primary);}
+  .tabbar svg{width:21px;height:21px;}
+  .view{display:none;}
+  .view.active{display:block;}
+  .modal-bg{
+    position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:flex-end;justify-content:center;z-index:50;
+  }
+  .modal-bg.active{display:flex;}
+  .modal{
+    background:var(--surface);border-radius:18px 18px 0 0;padding:20px;width:100%;max-width:640px;
+    max-height:88vh;overflow-y:auto;
+  }
+  .modal h3{margin:0 0 14px;font-size:17px;}
+  .diff-box{border-radius:10px;padding:12px;margin:10px 0;font-weight:700;font-size:14px;}
+  .diff-ok{background:var(--green-bg);color:var(--green);}
+  .diff-bad{background:var(--red-bg);color:var(--red);}
+  .history-item{
+    background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:13px;margin-bottom:10px;
+    cursor:pointer;
+  }
+  .history-item .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+  .history-item .top .title{font-weight:700;font-size:14.5px;}
+  .history-item .top .date{font-size:12px;color:var(--muted);}
+  .history-item .figures{display:flex;gap:14px;font-size:12.5px;color:var(--muted);flex-wrap:wrap;}
+  .history-item .figures b{color:var(--text);}
+  .section-title{font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;margin:18px 0 8px;}
+  select.category{margin-top:8px;}
+  .close-note{font-size:12.5px;color:var(--muted);margin-top:-4px;margin-bottom:12px;}
+  .toast{
+    position:fixed;bottom:88px;left:50%;transform:translateX(-50%);
+    background:var(--text);color:var(--bg);padding:10px 18px;border-radius:999px;font-size:13.5px;font-weight:600;
+    z-index:60;opacity:0;pointer-events:none;transition:opacity .2s, transform .2s;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(-6px);}
+  .top-actions{display:flex;gap:8px;margin-top:12px;}
+  .top-actions .btn{width:auto;flex:1;}
+  @media print{
+    .tabbar,.top-actions,.icon-btn,#fabPrintHide{display:none !important;}
+    body{padding-bottom:0;background:#fff;color:#000;}
+  }
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="brand">
+    <h1 id="shopName">Kas Toko</h1>
+    <div class="datetime" id="clock">-</div>
+  </div>
+  <button class="icon-btn" onclick="showView('settings')" title="Pengaturan">
+    <svg viewBox="0 0 24 24" fill="none" width="20" height="20"><path d="M12 15a3 3 0 100-6 3 3 0 000 6z" stroke="currentColor" stroke-width="2"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09a1.65 1.65 0 00-1-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09a1.65 1.65 0 001.51-1 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z" stroke="currentColor" stroke-width="1.5"/></svg>
+  </button>
+</header>
+
+<div class="wrap">
+
+  <!-- KASIR VIEW -->
+  <div class="view active" id="view-kasir">
+
+    <!-- no active shift -->
+    <div id="noShiftCard" class="card" style="display:none;">
+      <h2>Buka Shift Baru</h2>
+      <div class="field">
+        <label>Pilih Shift</label>
+        <div class="row2">
+          <button class="btn btn-outline" id="pickShift1" onclick="pickShift(1)">Shift 1</button>
+          <button class="btn btn-outline" id="pickShift2" onclick="pickShift(2)">Shift 2</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Nama Kasir</label>
+        <input type="text" id="cashierName" placeholder="Nama kasir yang bertugas">
+      </div>
+      <div class="field">
+        <label>Modal Awal Kas (Rp)</label>
+        <input type="number" id="openingBalance" placeholder="0" inputmode="numeric">
+      </div>
+      <button class="btn btn-primary" onclick="openShift()">Buka Shift</button>
+    </div>
+
+    <!-- active shift -->
+    <div id="activeShiftArea" style="display:none;">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <span class="shift-badge" id="activeShiftBadge">Shift 1</span>
+          <span style="font-size:12.5px;color:var(--muted);" id="activeCashier">-</span>
+        </div>
+        <div class="summary-grid">
+          <div class="stat"><div class="label">Modal Awal</div><div class="value" id="statOpening">Rp 0</div></div>
+          <div class="stat"><div class="label">Transaksi</div><div class="value" id="statCount">0</div></div>
+          <div class="stat"><div class="label">Uang Masuk</div><div class="value" style="color:var(--green)" id="statIn">Rp 0</div></div>
+          <div class="stat"><div class="label">Uang Keluar</div><div class="value" style="color:var(--red)" id="statOut">Rp 0</div></div>
+          <div class="stat balance"><div class="label">Saldo Kas Saat Ini</div><div class="value" id="statBalance">Rp 0</div></div>
+        </div>
+        <button class="btn btn-danger" onclick="openCloseModal()">Tutup Shift</button>
+      </div>
+
+      <div class="card">
+        <h2>Tambah Transaksi</h2>
+        <div class="seg">
+          <button type="button" class="active in" id="segIn" onclick="setTxType('in')">↓ Uang Masuk</button>
+          <button type="button" id="segOut" onclick="setTxType('out')">↑ Uang Keluar</button>
+        </div>
+        <div class="field">
+          <label>Jumlah (Rp)</label>
+          <input type="number" id="txAmount" placeholder="0" inputmode="numeric">
+        </div>
+        <div class="field">
+          <label>Keterangan</label>
+          <input type="text" id="txDesc" placeholder="Contoh: Penjualan barang / Beli galon">
+          <select class="category" id="txCategory"></select>
+        </div>
+        <button class="btn btn-primary" onclick="addTransaction()">Simpan Transaksi</button>
+      </div>
+
+      <div class="card">
+        <h2>Transaksi Shift Ini</h2>
+        <div id="txList"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIWAYAT VIEW -->
+  <div class="view" id="view-riwayat">
+    <div class="card">
+      <h2>Riwayat Shift</h2>
+      <div id="historyList"></div>
+      <div class="top-actions">
+        <button class="btn btn-ghost btn-sm" onclick="exportCSV()">Ekspor CSV</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DETAIL VIEW -->
+  <div class="view" id="view-detail">
+    <button class="icon-btn" onclick="showView('riwayat')" style="margin-bottom:12px;">←</button>
+    <div class="card" id="detailCard"></div>
+    <div class="top-actions">
+      <button class="btn btn-ghost" onclick="window.print()">🖨️ Cetak Laporan</button>
+    </div>
+  </div>
+
+  <!-- SETTINGS VIEW -->
+  <div class="view" id="view-settings">
+    <div class="card">
+      <h2>Pengaturan</h2>
+      <div class="field">
+        <label>Nama Toko</label>
+        <input type="text" id="settingShopName" placeholder="Nama toko Anda">
+      </div>
+      <div class="field">
+        <label>Tema</label>
+        <select id="settingTheme">
+          <option value="system">Ikuti Sistem</option>
+          <option value="light">Terang</option>
+          <option value="dark">Gelap</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" onclick="saveSettings()">Simpan</button>
+    </div>
+    <div class="card">
+      <h2>Data</h2>
+      <div class="close-note">Semua data disimpan hanya di perangkat/browser ini. Cadangkan secara berkala dengan tombol ekspor di halaman Riwayat.</div>
+      <button class="btn btn-danger" onclick="resetAllData()">Hapus Semua Data</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="tabbar">
+  <button class="active" data-tab="kasir" onclick="showView('kasir')">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M3 7h18M3 12h18M3 17h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    Kasir
+  </button>
+  <button data-tab="riwayat" onclick="showView('riwayat')">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M12 8v4l3 3M21 12a9 9 0 11-9-9 9 9 0 019 9z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    Riwayat
+  </button>
+  <button data-tab="settings" onclick="showView('settings')">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M12 15a3 3 0 100-6 3 3 0 000 6z" stroke="currentColor" stroke-width="2"/></svg>
+    Pengaturan
+  </button>
+</div>
+
+<!-- Close shift modal -->
+<div class="modal-bg" id="closeModalBg">
+  <div class="modal">
+    <h3>Tutup Shift</h3>
+    <div class="field">
+      <label>Saldo Sistem (Modal awal + Masuk - Keluar)</label>
+      <input type="text" id="closeExpected" disabled>
+    </div>
+    <div class="field">
+      <label>Jumlah Kas Fisik Dihitung (Rp)</label>
+      <input type="number" id="closeActual" placeholder="Masukkan hasil hitung kas" inputmode="numeric" oninput="updateDiff()">
+    </div>
+    <div id="closeDiffBox" style="display:none;" class="diff-box"></div>
+    <div class="field">
+      <label>Catatan (opsional)</label>
+      <textarea id="closeNote" rows="2" placeholder="Catatan penutupan shift"></textarea>
+    </div>
+    <div class="row2">
+      <button class="btn btn-outline" onclick="closeModalHide()">Batal</button>
+      <button class="btn btn-danger" onclick="confirmCloseShift()">Tutup Shift</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---------- Storage ---------- */
+const DB_KEY = "kastoko_v1";
+const SETTINGS_KEY = "kastoko_settings_v1";
+
+const CATS_IN = ["Penjualan", "Setoran Tambahan", "Pengembalian", "Lainnya"];
+const CATS_OUT = ["Belanja Stok", "Operasional", "Gaji/Uang Saku", "Kembalian Kurang", "Lainnya"];
+
+function loadDB(){
+  try{
+    const raw = localStorage.getItem(DB_KEY);
+    if(raw) return JSON.parse(raw);
+  }catch(e){}
+  return { shifts: [] };
+}
+function saveDB(){
+  try{ localStorage.setItem(DB_KEY, JSON.stringify(db)); }catch(e){
+    toast("Gagal menyimpan data (penyimpanan penuh?)");
+  }
+}
+function loadSettings(){
+  try{
+    const raw = localStorage.getItem(SETTINGS_KEY);
+    if(raw) return JSON.parse(raw);
+  }catch(e){}
+  return { shopName: "Kas Toko", theme: "system" };
+}
+function saveSettingsToStorage(){
+  try{ localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); }catch(e){}
+}
+
+let db = loadDB();
+let settings = loadSettings();
+let pendingShiftNumber = 1;
+let currentTxType = "in";
+
+/* ---------- Utilities ---------- */
+function fmtRp(n){
+  n = Math.round(Number(n) || 0);
+  return "Rp " + n.toLocaleString("id-ID");
+}
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+function todayStr(){
+  const d = new Date();
+  return d.toLocaleDateString("id-ID", { weekday:"long", year:"numeric", month:"long", day:"numeric" });
+}
+function toast(msg){
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.classList.add("show");
+  clearTimeout(toast._t);
+  toast._t = setTimeout(()=>el.classList.remove("show"), 2200);
+}
+function applyTheme(){
+  const root = document.documentElement;
+  if(settings.theme === "light") root.setAttribute("data-theme","light");
+  else if(settings.theme === "dark") root.setAttribute("data-theme","dark");
+  else root.removeAttribute("data-theme");
+}
+
+/* ---------- Clock ---------- */
+function tickClock(){
+  const el = document.getElementById("clock");
+  const now = new Date();
+  el.textContent = now.toLocaleDateString("id-ID",{weekday:"short",day:"2-digit",month:"short"}) + " · " +
+    now.toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit"});
+}
+setInterval(tickClock, 15000);
+
+/* ---------- Views / Tabs ---------- */
+function showView(name){
+  document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
+  const map = { kasir:"view-kasir", riwayat:"view-riwayat", settings:"view-settings", detail:"view-detail" };
+  document.getElementById(map[name]).classList.add("active");
+  document.querySelectorAll(".tabbar button").forEach(b=>b.classList.toggle("active", b.dataset.tab===name));
+  if(name==="riwayat") renderHistory();
+  if(name==="settings"){
+    document.getElementById("settingShopName").value = settings.shopName || "";
+    document.getElementById("settingTheme").value = settings.theme || "system";
+  }
+}
+
+/* ---------- Active shift helpers ---------- */
+function getActiveShift(){
+  return db.shifts.find(s=>!s.closed);
+}
+function pickShift(n){
+  pendingShiftNumber = n;
+  document.getElementById("pickShift1").classList.toggle("btn-primary", n===1);
+  document.getElementById("pickShift1").classList.toggle("btn-outline", n!==1);
+  document.getElementById("pickShift2").classList.toggle("btn-primary", n===2);
+  document.getElementById("pickShift2").classList.toggle("btn-outline", n!==2);
+}
+
+function openShift(){
+  const name = document.getElementById("cashierName").value.trim();
+  const opening = Number(document.getElementById("openingBalance").value || 0);
+  if(!name){ toast("Isi nama kasir terlebih dahulu"); return; }
+  if(opening < 0){ toast("Modal awal tidak valid"); return; }
+  const shift = {
+    id: uid(),
+    shiftNumber: pendingShiftNumber,
+    cashier: name,
+    date: new Date().toISOString(),
+    openingBalance: opening,
+    closed: false,
+    closedAt: null,
+    actualCash: null,
+    note: "",
+    transactions: []
+  };
+  db.shifts.unshift(shift);
+  saveDB();
+  document.getElementById("cashierName").value = "";
+  document.getElementById("openingBalance").value = "";
+  renderKasir();
+  toast("Shift " + pendingShiftNumber + " dibuka");
+}
+
+function setTxType(type){
+  currentTxType = type;
+  document.getElementById("segIn").classList.toggle("active", type==="in");
+  document.getElementById("segIn").classList.toggle("in", type==="in");
+  document.getElementById("segOut").classList.toggle("active", type==="out");
+  document.getElementById("segOut").classList.toggle("out", type==="out");
+  populateCategories();
+}
+function populateCategories(){
+  const sel = document.getElementById("txCategory");
+  const list = currentTxType === "in" ? CATS_IN : CATS_OUT;
+  sel.innerHTML = list.map(c=>`<option value="${c}">${c}</option>`).join("");
+}
+
+function addTransaction(){
+  const shift = getActiveShift();
+  if(!shift){ toast("Belum ada shift aktif"); return; }
+  const amount = Number(document.getElementById("txAmount").value || 0);
+  const desc = document.getElementById("txDesc").value.trim();
+  const cat = document.getElementById("txCategory").value;
+  if(amount <= 0){ toast("Jumlah harus lebih dari 0"); return; }
+  shift.transactions.unshift({
+    id: uid(),
+    type: currentTxType,
+    amount: amount,
+    desc: desc || cat,
+    category: cat,
+    time: new Date().toISOString()
+  });
+  saveDB();
+  document.getElementById("txAmount").value = "";
+  document.getElementById("txDesc").value = "";
+  renderKasir();
+  toast(currentTxType === "in" ? "Uang masuk dicatat" : "Uang keluar dicatat");
+}
+
+function deleteTransaction(shiftId, txId){
+  const shift = db.shifts.find(s=>s.id===shiftId);
+  if(!shift) return;
+  if(!confirm("Hapus transaksi ini?")) return;
+  shift.transactions = shift.transactions.filter(t=>t.id!==txId);
+  saveDB();
+  renderKasir();
+}
+
+function computeTotals(shift){
+  let totalIn=0, totalOut=0;
+  shift.transactions.forEach(t=>{
+    if(t.type==="in") totalIn += t.amount; else totalOut += t.amount;
+  });
+  const balance = shift.openingBalance + totalIn - totalOut;
+  return { totalIn, totalOut, balance };
+}
+
+/* ---------- Render kasir ---------- */
+function renderKasir(){
+  const shift = getActiveShift();
+  if(!shift){
+    document.getElementById("noShiftCard").style.display = "block";
+    document.getElementById("activeShiftArea").style.display = "none";
+    pickShift(1);
+    return;
+  }
+  document.getElementById("noShiftCard").style.display = "none";
+  document.getElementById("activeShiftArea").style.display = "block";
+
+  document.getElementById("activeShiftBadge").textContent = "Shift " + shift.shiftNumber;
+  document.getElementById("activeCashier").textContent = shift.cashier;
+
+  const { totalIn, totalOut, balance } = computeTotals(shift);
+  document.getElementById("statOpening").textContent = fmtRp(shift.openingBalance);
+  document.getElementById("statCount").textContent = shift.transactions.length;
+  document.getElementById("statIn").textContent = fmtRp(totalIn);
+  document.getElementById("statOut").textContent = fmtRp(totalOut);
+  document.getElementById("statBalance").textContent = fmtRp(balance);
+
+  const list = document.getElementById("txList");
+  if(shift.transactions.length === 0){
+    list.innerHTML = `<div class="empty">Belum ada transaksi pada shift ini.</div>`;
+  }else{
+    list.innerHTML = shift.transactions.map(t=>{
+      const time = new Date(t.time).toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit"});
+      return `<div class="tx-item">
+        <div class="tx-dot ${t.type}">${t.type==="in" ? "↓" : "↑"}</div>
+        <div class="tx-info">
+          <div class="desc">${escapeHtml(t.desc)}</div>
+          <div class="meta">${time} · ${escapeHtml(t.category)}</div>
+        </div>
+        <div class="tx-amount ${t.type}">${t.type==="in"?"+":"-"}${fmtRp(t.amount)}</div>
+        <button class="tx-del" onclick="deleteTransaction('${shift.id}','${t.id}')" title="Hapus">✕</button>
+      </div>`;
+    }).join("");
+  }
+  populateCategories();
+}
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+
+/* ---------- Close shift ---------- */
+function openCloseModal(){
+  const shift = getActiveShift();
+  if(!shift) return;
+  const { balance } = computeTotals(shift);
+  document.getElementById("closeExpected").value = fmtRp(balance);
+  document.getElementById("closeActual").value = "";
+  document.getElementById("closeNote").value = "";
+  document.getElementById("closeDiffBox").style.display = "none";
+  document.getElementById("closeModalBg").classList.add("active");
+}
+function closeModalHide(){
+  document.getElementById("closeModalBg").classList.remove("active");
+}
+function updateDiff(){
+  const shift = getActiveShift();
+  if(!shift) return;
+  const { balance } = computeTotals(shift);
+  const actualStr = document.getElementById("closeActual").value;
+  const box = document.getElementById("closeDiffBox");
+  if(actualStr === ""){ box.style.display = "none"; return; }
+  const actual = Number(actualStr);
+  const diff = actual - balance;
+  box.style.display = "block";
+  if(diff === 0){
+    box.className = "diff-box diff-ok";
+    box.textContent = "Sesuai. Kas fisik cocok dengan saldo sistem.";
+  }else if(diff > 0){
+    box.className = "diff-box diff-bad";
+    box.textContent = "Lebih " + fmtRp(diff) + " dari saldo sistem.";
+  }else{
+    box.className = "diff-box diff-bad";
+    box.textContent = "Kurang " + fmtRp(Math.abs(diff)) + " dari saldo sistem.";
+  }
+}
+function confirmCloseShift(){
+  const shift = getActiveShift();
+  if(!shift) return;
+  const actualStr = document.getElementById("closeActual").value;
+  if(actualStr === ""){ toast("Isi jumlah kas fisik terlebih dahulu"); return; }
+  shift.actualCash = Number(actualStr);
+  shift.note = document.getElementById("closeNote").value.trim();
+  shift.closed = true;
+  shift.closedAt = new Date().toISOString();
+  saveDB();
+  closeModalHide();
+  renderKasir();
+  toast("Shift " + shift.shiftNumber + " ditutup");
+}
+
+/* ---------- History ---------- */
+function renderHistory(){
+  const list = document.getElementById("historyList");
+  if(db.shifts.length === 0){
+    list.innerHTML = `<div class="empty">Belum ada riwayat shift.</div>`;
+    return;
+  }
+  list.innerHTML = db.shifts.map(s=>{
+    const { totalIn, totalOut, balance } = computeTotals(s);
+    const dateStr = new Date(s.date).toLocaleDateString("id-ID",{day:"2-digit",month:"short",year:"numeric"});
+    const statusLabel = s.closed ? "Ditutup" : "Aktif";
+    return `<div class="history-item" onclick="showDetail('${s.id}')">
+      <div class="top">
+        <span class="title">Shift ${s.shiftNumber} · ${escapeHtml(s.cashier)}</span>
+        <span class="date">${dateStr}</span>
+      </div>
+      <div class="figures">
+        <span>Masuk <b>${fmtRp(totalIn)}</b></span>
+        <span>Keluar <b>${fmtRp(totalOut)}</b></span>
+        <span>Saldo <b>${fmtRp(balance)}</b></span>
+        <span>${statusLabel}</span>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function showDetail(shiftId){
+  const shift = db.shifts.find(s=>s.id===shiftId);
+  if(!shift) return;
+  const { totalIn, totalOut, balance } = computeTotals(shift);
+  const dateStr = new Date(shift.date).toLocaleDateString("id-ID",{weekday:"long",day:"2-digit",month:"long",year:"numeric"});
+  const openTime = new Date(shift.date).toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit"});
+  const closeTime = shift.closedAt ? new Date(shift.closedAt).toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit"}) : "-";
+
+  let diffHtml = "";
+  if(shift.closed && shift.actualCash !== null){
+    const diff = shift.actualCash - balance;
+    const cls = diff === 0 ? "diff-ok" : "diff-bad";
+    const label = diff === 0 ? "Sesuai" : (diff > 0 ? "Lebih " + fmtRp(diff) : "Kurang " + fmtRp(Math.abs(diff)));
+    diffHtml = `
+      <div class="stat"><div class="label">Kas Fisik Dihitung</div><div class="value">${fmtRp(shift.actualCash)}</div></div>
+      <div class="stat"><div class="label">Selisih</div><div class="value">${label}</div></div>`;
+  }
+
+  const txHtml = shift.transactions.length === 0
+    ? `<div class="empty">Tidak ada transaksi.</div>`
+    : shift.transactions.slice().reverse().map(t=>{
+        const time = new Date(t.time).toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit"});
+        return `<div class="tx-item">
+          <div class="tx-dot ${t.type}">${t.type==="in" ? "↓" : "↑"}</div>
+          <div class="tx-info">
+            <div class="desc">${escapeHtml(t.desc)}</div>
+            <div class="meta">${time} · ${escapeHtml(t.category)}</div>
+          </div>
+          <div class="tx-amount ${t.type}">${t.type==="in"?"+":"-"}${fmtRp(t.amount)}</div>
+        </div>`;
+      }).join("");
+
+  document.getElementById("detailCard").innerHTML = `
+    <h2>Shift ${shift.shiftNumber} · ${escapeHtml(shift.cashier)}</h2>
+    <div class="close-note">${dateStr}<br>Buka ${openTime} &nbsp;·&nbsp; Tutup ${closeTime}</div>
+    <div class="summary-grid">
+      <div class="stat"><div class="label">Modal Awal</div><div class="value">${fmtRp(shift.openingBalance)}</div></div>
+      <div class="stat"><div class="label">Transaksi</div><div class="value">${shift.transactions.length}</div></div>
+      <div class="stat"><div class="label">Uang Masuk</div><div class="value" style="color:var(--green)">${fmtRp(totalIn)}</div></div>
+      <div class="stat"><div class="label">Uang Keluar</div><div class="value" style="color:var(--red)">${fmtRp(totalOut)}</div></div>
+      ${diffHtml}
+      <div class="stat balance"><div class="label">Saldo Akhir Sistem</div><div class="value">${fmtRp(balance)}</div></div>
+    </div>
+    ${shift.note ? `<div class="close-note"><b>Catatan:</b> ${escapeHtml(shift.note)}</div>` : ""}
+    <div class="section-title">Daftar Transaksi</div>
+    ${txHtml}
+  `;
+  showView("detail");
+}
+
+/* ---------- Export ---------- */
+function exportCSV(){
+  if(db.shifts.length === 0){ toast("Belum ada data untuk diekspor"); return; }
+  let rows = [["Tanggal","Shift","Kasir","Modal Awal","Tipe","Jumlah","Keterangan","Kategori","Waktu Transaksi","Status Shift","Kas Fisik","Saldo Sistem"]];
+  db.shifts.forEach(s=>{
+    const { balance } = computeTotals(s);
+    const dateStr = new Date(s.date).toLocaleDateString("id-ID");
+    if(s.transactions.length === 0){
+      rows.push([dateStr, s.shiftNumber, s.cashier, s.openingBalance, "", "", "", "", "", s.closed?"Ditutup":"Aktif", s.actualCash ?? "", balance]);
+    }else{
+      s.transactions.slice().reverse().forEach(t=>{
+        rows.push([
+          dateStr, s.shiftNumber, s.cashier, s.openingBalance,
+          t.type==="in" ? "Masuk" : "Keluar", t.amount, t.desc, t.category,
+          new Date(t.time).toLocaleTimeString("id-ID"),
+          s.closed?"Ditutup":"Aktif", s.actualCash ?? "", balance
+        ]);
+      });
+    }
+  });
+  const csv = rows.map(r=>r.map(v=>{
+    const s = String(v ?? "");
+    return /[",\n]/.test(s) ? '"' + s.replace(/"/g,'""') + '"' : s;
+  }).join(",")).join("\n");
+  const blob = new Blob(["﻿"+csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "kas-toko-" + new Date().toISOString().slice(0,10) + ".csv";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+/* ---------- Settings ---------- */
+function saveSettings(){
+  settings.shopName = document.getElementById("settingShopName").value.trim() || "Kas Toko";
+  settings.theme = document.getElementById("settingTheme").value;
+  saveSettingsToStorage();
+  document.getElementById("shopName").textContent = settings.shopName;
+  applyTheme();
+  toast("Pengaturan disimpan");
+}
+function resetAllData(){
+  if(!confirm("Semua data shift dan transaksi akan dihapus permanen. Lanjutkan?")) return;
+  if(!confirm("Ini tidak bisa dibatalkan. Yakin hapus semua data?")) return;
+  db = { shifts: [] };
+  saveDB();
+  renderKasir();
+  renderHistory();
+  toast("Semua data telah dihapus");
+}
+
+/* ---------- Init ---------- */
+function init(){
+  document.getElementById("shopName").textContent = settings.shopName || "Kas Toko";
+  applyTheme();
+  tickClock();
+  setTxType("in");
+  renderKasir();
+}
+init();
+</script>
+</body>
+</html>
