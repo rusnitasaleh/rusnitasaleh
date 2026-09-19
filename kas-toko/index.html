@@ -97,7 +97,7 @@
   }
   .shift-badge.closed{background:var(--muted);}
   label{display:block;font-size:13px;color:var(--muted);margin:0 0 6px;font-weight:600;}
-  input[type=text], input[type=number], select, textarea{
+  input[type=text], input[type=number], input[type=password], input[type=email], select, textarea{
     width:100%;padding:11px 12px;border-radius:10px;border:1px solid var(--border);
     background:var(--surface-2);color:var(--text);font-size:15px;font-family:inherit;
     outline:none;
@@ -184,6 +184,17 @@
   .history-item .figures{display:flex;gap:14px;font-size:12.5px;color:var(--muted);flex-wrap:wrap;}
   .history-item .figures b{color:var(--text);}
   .section-title{font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;margin:18px 0 8px;}
+  select.category{margin-top:8px;}
+  .close-note{font-size:12.5px;color:var(--muted);margin-top:-4px;margin-bottom:12px;}
+  .toast{
+    position:fixed;bottom:88px;left:50%;transform:translateX(-50%);
+    background:var(--text);color:var(--bg);padding:10px 18px;border-radius:999px;font-size:13.5px;font-weight:600;
+    z-index:60;opacity:0;pointer-events:none;transition:opacity .2s, transform .2s;
+    max-width:90vw;text-align:center;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(-6px);}
+  .top-actions{display:flex;gap:8px;margin-top:12px;}
+  .top-actions .btn{width:auto;flex:1;}
   .rank-item{padding:13px 0;border-bottom:1px solid var(--border);}
   .rank-item:last-child{border-bottom:none;}
   .rank-item .top{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
@@ -200,16 +211,14 @@
   .rank-item.top1 .bar-fill{background:var(--amber);}
   .rank-figures{display:flex;gap:14px;font-size:12px;color:var(--muted);flex-wrap:wrap;}
   .rank-figures b{color:var(--text);}
-  select.category{margin-top:8px;}
-  .close-note{font-size:12.5px;color:var(--muted);margin-top:-4px;margin-bottom:12px;}
-  .toast{
-    position:fixed;bottom:88px;left:50%;transform:translateX(-50%);
-    background:var(--text);color:var(--bg);padding:10px 18px;border-radius:999px;font-size:13.5px;font-weight:600;
-    z-index:60;opacity:0;pointer-events:none;transition:opacity .2s, transform .2s;
-  }
-  .toast.show{opacity:1;transform:translateX(-50%) translateY(-6px);}
-  .top-actions{display:flex;gap:8px;margin-top:12px;}
-  .top-actions .btn{width:auto;flex:1;}
+  .center-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
+  .login-card{width:100%;max-width:380px;}
+  .login-card h1{margin:0 0 4px;font-size:20px;}
+  .login-card .sub{color:var(--muted);font-size:13px;margin-bottom:18px;}
+  .form-error{background:var(--red-bg);color:var(--red);padding:10px 12px;border-radius:10px;font-size:13px;font-weight:600;margin-bottom:12px;display:none;}
+  .loading-text{color:var(--muted);font-size:14px;}
+  .account-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px;font-size:13px;color:var(--muted);}
+  .account-row b{color:var(--text);}
   @media print{
     .tabbar,.top-actions,.icon-btn,#fabPrintHide{display:none !important;}
     body{padding-bottom:0;background:#fff;color:#000;}
@@ -217,6 +226,32 @@
 </style>
 </head>
 <body>
+
+<!-- LOADING -->
+<div class="center-screen" id="loadingScreen">
+  <div class="loading-text" id="loadingText">Memuat Kas Toko...</div>
+</div>
+
+<!-- LOGIN -->
+<div class="center-screen" id="loginScreen" style="display:none;">
+  <div class="card login-card">
+    <h1>Kas Toko</h1>
+    <div class="sub">Masuk dengan akun yang diberikan pemilik toko.</div>
+    <div class="form-error" id="loginError"></div>
+    <div class="field">
+      <label>Email</label>
+      <input type="email" id="loginEmail" placeholder="nama@tokoanda.com" autocomplete="username">
+    </div>
+    <div class="field">
+      <label>Kata Sandi</label>
+      <input type="password" id="loginPassword" placeholder="Kata sandi" autocomplete="current-password">
+    </div>
+    <button class="btn btn-primary" onclick="doLogin()" id="loginBtn">Masuk</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="appRoot" style="display:none;">
 
 <header class="app-header">
   <div class="brand">
@@ -318,7 +353,7 @@
 
   <!-- DETAIL VIEW -->
   <div class="view" id="view-detail">
-    <button class="icon-btn" onclick="showView('riwayat')" style="margin-bottom:12px;">←</button>
+    <button class="icon-btn" onclick="leaveDetail()" style="margin-bottom:12px;">←</button>
     <div class="card" id="detailCard"></div>
     <div class="top-actions">
       <button class="btn btn-ghost" onclick="window.print()">🖨️ Cetak Laporan</button>
@@ -327,6 +362,11 @@
 
   <!-- SETTINGS VIEW -->
   <div class="view" id="view-settings">
+    <div class="card">
+      <h2>Akun</h2>
+      <div class="account-row">Masuk sebagai <b id="accountEmail">-</b></div>
+      <button class="btn btn-outline" onclick="doLogout()">Keluar</button>
+    </div>
     <div class="card">
       <h2>Pengaturan</h2>
       <div class="field">
@@ -345,8 +385,8 @@
     </div>
     <div class="card">
       <h2>Data</h2>
-      <div class="close-note">Semua data disimpan hanya di perangkat/browser ini. Cadangkan secara berkala dengan tombol ekspor di halaman Riwayat.</div>
-      <button class="btn btn-danger" onclick="resetAllData()">Hapus Semua Data</button>
+      <div class="close-note">Data shift &amp; transaksi disimpan bersama di cloud dan dapat dilihat oleh semua akun yang diberi akses oleh pemilik toko. Cadangkan secara berkala dengan tombol ekspor di halaman Riwayat.</div>
+      <button class="btn btn-danger" onclick="resetAllData()">Hapus SEMUA Data (Semua Kasir)</button>
     </div>
   </div>
 
@@ -395,28 +435,56 @@
   </div>
 </div>
 
+</div><!-- /appRoot -->
+
 <div class="toast" id="toast"></div>
 
+<!-- Firebase (modular SDK via CDN). Exposes what the app needs on window.__fb -->
+<script src="firebase-config.js"></script>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import {
+    getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  import {
+    getFirestore, collection, doc, onSnapshot, query, orderBy,
+    runTransaction, writeBatch, increment, getDocs, enableIndexedDbPersistence
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  function isConfigured(cfg){
+    return !!(cfg && cfg.apiKey && !String(cfg.apiKey).includes("GANTI_DENGAN"));
+  }
+
+  const cfg = window.FIREBASE_CONFIG || {};
+  if(!isConfigured(cfg)){
+    document.getElementById("loadingText").innerHTML =
+      "Firebase belum dikonfigurasi.<br>Isi <code>firebase-config.js</code> sesuai README.md.";
+  }else{
+    try{
+      const app = initializeApp(cfg);
+      const auth = getAuth(app);
+      const db = getFirestore(app);
+      try{ await enableIndexedDbPersistence(db); }catch(e){ /* multi-tab or unsupported: ignore */ }
+
+      window.__fb = {
+        auth, db, onAuthStateChanged, signInWithEmailAndPassword, signOut,
+        collection, doc, onSnapshot, query, orderBy,
+        runTransaction, writeBatch, increment, getDocs
+      };
+      window.dispatchEvent(new Event("firebase-ready"));
+    }catch(e){
+      document.getElementById("loadingText").textContent = "Gagal memuat Firebase: " + e.message;
+    }
+  }
+</script>
+
 <script>
-/* ---------- Storage ---------- */
-const DB_KEY = "kastoko_v1";
+/* ---------- Local UI-only settings (device preference, not shop data) ---------- */
 const SETTINGS_KEY = "kastoko_settings_v1";
 
 const CATS_IN = ["Penjualan", "Setoran Tambahan", "Pengembalian", "Lainnya"];
 const CATS_OUT = ["Belanja Stok", "Operasional", "Gaji/Uang Saku", "Kembalian Kurang", "Lainnya"];
 
-function loadDB(){
-  try{
-    const raw = localStorage.getItem(DB_KEY);
-    if(raw) return JSON.parse(raw);
-  }catch(e){}
-  return { shifts: [] };
-}
-function saveDB(){
-  try{ localStorage.setItem(DB_KEY, JSON.stringify(db)); }catch(e){
-    toast("Gagal menyimpan data (penyimpanan penuh?)");
-  }
-}
 function loadSettings(){
   try{
     const raw = localStorage.getItem(SETTINGS_KEY);
@@ -428,33 +496,49 @@ function saveSettingsToStorage(){
   try{ localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); }catch(e){}
 }
 
-let db = loadDB();
 let settings = loadSettings();
 let pendingShiftNumber = 1;
 let currentTxType = "in";
+let currentUser = null;
+
+/* Live data mirrored from Firestore */
+let shiftsCache = [];       // all shift docs {id, ...}, newest first
+let activeShiftId = null;   // id of the currently open shift, or null
+let activeShiftTx = [];     // transactions of the active shift, realtime
+let detailShiftId = null;   // shift id currently open in the detail view
+let detailShiftTx = [];     // transactions for that shift, realtime
+
+let unsubShifts = null;
+let unsubMeta = null;
+let unsubActiveTx = null;
+let unsubDetailTx = null;
 
 /* ---------- Utilities ---------- */
 function fmtRp(n){
   n = Math.round(Number(n) || 0);
   return "Rp " + n.toLocaleString("id-ID");
 }
-function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
-function todayStr(){
-  const d = new Date();
-  return d.toLocaleDateString("id-ID", { weekday:"long", year:"numeric", month:"long", day:"numeric" });
-}
 function toast(msg){
   const el = document.getElementById("toast");
   el.textContent = msg;
   el.classList.add("show");
   clearTimeout(toast._t);
-  toast._t = setTimeout(()=>el.classList.remove("show"), 2200);
+  toast._t = setTimeout(()=>el.classList.remove("show"), 2600);
 }
 function applyTheme(){
   const root = document.documentElement;
   if(settings.theme === "light") root.setAttribute("data-theme","light");
   else if(settings.theme === "dark") root.setAttribute("data-theme","dark");
   else root.removeAttribute("data-theme");
+}
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+function computeTotals(shift){
+  const totalIn = shift.totalIn || 0;
+  const totalOut = shift.totalOut || 0;
+  const balance = (shift.openingBalance || 0) + totalIn - totalOut;
+  return { totalIn, totalOut, balance };
 }
 
 /* ---------- Clock ---------- */
@@ -477,13 +561,107 @@ function showView(name){
   if(name==="settings"){
     document.getElementById("settingShopName").value = settings.shopName || "";
     document.getElementById("settingTheme").value = settings.theme || "system";
+    document.getElementById("accountEmail").textContent = currentUser ? currentUser.email : "-";
   }
+}
+function leaveDetail(){
+  if(unsubDetailTx){ unsubDetailTx(); unsubDetailTx = null; }
+  detailShiftId = null;
+  detailShiftTx = [];
+  showView("riwayat");
+}
+
+/* ---------- Auth ---------- */
+async function doLogin(){
+  const email = document.getElementById("loginEmail").value.trim();
+  const password = document.getElementById("loginPassword").value;
+  const errEl = document.getElementById("loginError");
+  errEl.style.display = "none";
+  if(!email || !password){
+    errEl.textContent = "Isi email dan kata sandi";
+    errEl.style.display = "block";
+    return;
+  }
+  const btn = document.getElementById("loginBtn");
+  btn.disabled = true;
+  try{
+    await window.__fb.signInWithEmailAndPassword(window.__fb.auth, email, password);
+  }catch(e){
+    errEl.textContent = "Gagal masuk: email atau kata sandi salah.";
+    errEl.style.display = "block";
+  }finally{
+    btn.disabled = false;
+  }
+}
+function doLogout(){
+  stopAllListeners();
+  window.__fb.signOut(window.__fb.auth);
+}
+function showLogin(){
+  document.getElementById("loadingScreen").style.display = "none";
+  document.getElementById("appRoot").style.display = "none";
+  document.getElementById("loginScreen").style.display = "flex";
+  document.getElementById("loginEmail").value = "";
+  document.getElementById("loginPassword").value = "";
+  document.getElementById("loginError").style.display = "none";
+}
+function showApp(){
+  document.getElementById("loadingScreen").style.display = "none";
+  document.getElementById("loginScreen").style.display = "none";
+  document.getElementById("appRoot").style.display = "block";
+}
+
+/* ---------- Firestore listeners ---------- */
+function stopAllListeners(){
+  if(unsubShifts){ unsubShifts(); unsubShifts = null; }
+  if(unsubMeta){ unsubMeta(); unsubMeta = null; }
+  if(unsubActiveTx){ unsubActiveTx(); unsubActiveTx = null; }
+  if(unsubDetailTx){ unsubDetailTx(); unsubDetailTx = null; }
+  shiftsCache = [];
+  activeShiftId = null;
+  activeShiftTx = [];
+  detailShiftId = null;
+  detailShiftTx = [];
+}
+
+function startShiftsListener(){
+  const { db, collection, query, orderBy, onSnapshot } = window.__fb;
+  const q = query(collection(db, "shifts"), orderBy("date", "desc"));
+  unsubShifts = onSnapshot(q, (snap) => {
+    shiftsCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderKasir();
+    if(document.getElementById("view-riwayat").classList.contains("active")) renderHistory();
+    if(document.getElementById("view-statistik").classList.contains("active")) renderStatistik();
+  }, (err) => { toast("Gagal memuat data: " + err.message); });
+}
+
+function startActiveShiftListener(){
+  const { db, doc, onSnapshot, collection, query, orderBy } = window.__fb;
+  const metaRef = doc(db, "meta", "activeShift");
+  unsubMeta = onSnapshot(metaRef, (snap) => {
+    const newId = snap.exists() ? (snap.data().shiftId || null) : null;
+    if(newId !== activeShiftId){
+      activeShiftId = newId;
+      if(unsubActiveTx){ unsubActiveTx(); unsubActiveTx = null; }
+      activeShiftTx = [];
+      if(activeShiftId){
+        const txQ = query(collection(db, "shifts", activeShiftId, "transactions"), orderBy("time", "desc"));
+        unsubActiveTx = onSnapshot(txQ, (txSnap) => {
+          activeShiftTx = txSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+          renderKasir();
+        });
+      }
+    }
+    renderKasir();
+  }, (err) => { toast("Gagal memuat status shift: " + err.message); });
+}
+
+function getActiveShiftDoc(){
+  if(!activeShiftId) return null;
+  return shiftsCache.find(s => s.id === activeShiftId) || null;
 }
 
 /* ---------- Active shift helpers ---------- */
-function getActiveShift(){
-  return db.shifts.find(s=>!s.closed);
-}
 function pickShift(n){
   pendingShiftNumber = n;
   document.getElementById("pickShift1").classList.toggle("btn-primary", n===1);
@@ -492,29 +670,42 @@ function pickShift(n){
   document.getElementById("pickShift2").classList.toggle("btn-outline", n!==2);
 }
 
-function openShift(){
+async function openShift(){
   const name = document.getElementById("cashierName").value.trim();
   const opening = Number(document.getElementById("openingBalance").value || 0);
   if(!name){ toast("Isi nama kasir terlebih dahulu"); return; }
   if(opening < 0){ toast("Modal awal tidak valid"); return; }
-  const shift = {
-    id: uid(),
-    shiftNumber: pendingShiftNumber,
-    cashier: name,
-    date: new Date().toISOString(),
-    openingBalance: opening,
-    closed: false,
-    closedAt: null,
-    actualCash: null,
-    note: "",
-    transactions: []
-  };
-  db.shifts.unshift(shift);
-  saveDB();
-  document.getElementById("cashierName").value = "";
-  document.getElementById("openingBalance").value = "";
-  renderKasir();
-  toast("Shift " + pendingShiftNumber + " dibuka");
+  const { db, doc, collection, runTransaction } = window.__fb;
+  const metaRef = doc(db, "meta", "activeShift");
+  try{
+    await runTransaction(db, async (tx) => {
+      const metaSnap = await tx.get(metaRef);
+      if(metaSnap.exists() && metaSnap.data().shiftId){
+        throw new Error("ALREADY_ACTIVE");
+      }
+      const newShiftRef = doc(collection(db, "shifts"));
+      tx.set(newShiftRef, {
+        shiftNumber: pendingShiftNumber,
+        cashier: name,
+        cashierEmail: currentUser ? currentUser.email : "",
+        date: new Date().toISOString(),
+        openingBalance: opening,
+        totalIn: 0,
+        totalOut: 0,
+        closed: false,
+        closedAt: null,
+        actualCash: null,
+        note: ""
+      });
+      tx.set(metaRef, { shiftId: newShiftRef.id });
+    });
+    document.getElementById("cashierName").value = "";
+    document.getElementById("openingBalance").value = "";
+    toast("Shift " + pendingShiftNumber + " dibuka");
+  }catch(e){
+    if(e.message === "ALREADY_ACTIVE") toast("Sudah ada shift aktif (mungkin dibuka dari perangkat lain)");
+    else toast("Gagal membuka shift: " + e.message);
+  }
 }
 
 function setTxType(type){
@@ -531,50 +722,57 @@ function populateCategories(){
   sel.innerHTML = list.map(c=>`<option value="${c}">${c}</option>`).join("");
 }
 
-function addTransaction(){
-  const shift = getActiveShift();
-  if(!shift){ toast("Belum ada shift aktif"); return; }
+async function addTransaction(){
+  if(!activeShiftId){ toast("Belum ada shift aktif"); return; }
   const amount = Number(document.getElementById("txAmount").value || 0);
   const desc = document.getElementById("txDesc").value.trim();
   const cat = document.getElementById("txCategory").value;
   if(amount <= 0){ toast("Jumlah harus lebih dari 0"); return; }
-  shift.transactions.unshift({
-    id: uid(),
+  const { db, doc, collection, writeBatch, increment } = window.__fb;
+  const shiftRef = doc(db, "shifts", activeShiftId);
+  const txRef = doc(collection(db, "shifts", activeShiftId, "transactions"));
+  const batch = writeBatch(db);
+  batch.set(txRef, {
     type: currentTxType,
     amount: amount,
     desc: desc || cat,
     category: cat,
-    time: new Date().toISOString()
+    time: new Date().toISOString(),
+    by: currentUser ? currentUser.email : ""
   });
-  saveDB();
-  document.getElementById("txAmount").value = "";
-  document.getElementById("txDesc").value = "";
-  renderKasir();
-  toast(currentTxType === "in" ? "Uang masuk dicatat" : "Uang keluar dicatat");
+  batch.update(shiftRef, currentTxType === "in" ? { totalIn: increment(amount) } : { totalOut: increment(amount) });
+  try{
+    await batch.commit();
+    document.getElementById("txAmount").value = "";
+    document.getElementById("txDesc").value = "";
+    toast(currentTxType === "in" ? "Uang masuk dicatat" : "Uang keluar dicatat");
+  }catch(e){
+    toast("Gagal menyimpan transaksi: " + e.message);
+  }
 }
 
-function deleteTransaction(shiftId, txId){
-  const shift = db.shifts.find(s=>s.id===shiftId);
-  if(!shift) return;
+async function deleteTransaction(shiftId, txId){
   if(!confirm("Hapus transaksi ini?")) return;
-  shift.transactions = shift.transactions.filter(t=>t.id!==txId);
-  saveDB();
-  renderKasir();
-}
-
-function computeTotals(shift){
-  let totalIn=0, totalOut=0;
-  shift.transactions.forEach(t=>{
-    if(t.type==="in") totalIn += t.amount; else totalOut += t.amount;
-  });
-  const balance = shift.openingBalance + totalIn - totalOut;
-  return { totalIn, totalOut, balance };
+  const source = (shiftId === activeShiftId) ? activeShiftTx : detailShiftTx;
+  const txItem = source.find(t => t.id === txId);
+  if(!txItem) return;
+  const { db, doc, writeBatch, increment } = window.__fb;
+  const shiftRef = doc(db, "shifts", shiftId);
+  const txRef = doc(db, "shifts", shiftId, "transactions", txId);
+  const batch = writeBatch(db);
+  batch.delete(txRef);
+  batch.update(shiftRef, txItem.type === "in" ? { totalIn: increment(-txItem.amount) } : { totalOut: increment(-txItem.amount) });
+  try{
+    await batch.commit();
+  }catch(e){
+    toast("Gagal menghapus transaksi: " + e.message);
+  }
 }
 
 /* ---------- Render kasir ---------- */
 function renderKasir(){
-  const shift = getActiveShift();
-  if(!shift){
+  const shift = getActiveShiftDoc();
+  if(!activeShiftId || !shift){
     document.getElementById("noShiftCard").style.display = "block";
     document.getElementById("activeShiftArea").style.display = "none";
     pickShift(1);
@@ -588,16 +786,16 @@ function renderKasir(){
 
   const { totalIn, totalOut, balance } = computeTotals(shift);
   document.getElementById("statOpening").textContent = fmtRp(shift.openingBalance);
-  document.getElementById("statCount").textContent = shift.transactions.length;
+  document.getElementById("statCount").textContent = activeShiftTx.length;
   document.getElementById("statIn").textContent = fmtRp(totalIn);
   document.getElementById("statOut").textContent = fmtRp(totalOut);
   document.getElementById("statBalance").textContent = fmtRp(balance);
 
   const list = document.getElementById("txList");
-  if(shift.transactions.length === 0){
+  if(activeShiftTx.length === 0){
     list.innerHTML = `<div class="empty">Belum ada transaksi pada shift ini.</div>`;
   }else{
-    list.innerHTML = shift.transactions.map(t=>{
+    list.innerHTML = activeShiftTx.map(t=>{
       const time = new Date(t.time).toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit"});
       return `<div class="tx-item">
         <div class="tx-dot ${t.type}">${t.type==="in" ? "↓" : "↑"}</div>
@@ -612,13 +810,10 @@ function renderKasir(){
   }
   populateCategories();
 }
-function escapeHtml(s){
-  return String(s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-}
 
 /* ---------- Close shift ---------- */
 function openCloseModal(){
-  const shift = getActiveShift();
+  const shift = getActiveShiftDoc();
   if(!shift) return;
   const { balance } = computeTotals(shift);
   document.getElementById("closeExpected").value = fmtRp(balance);
@@ -631,7 +826,7 @@ function closeModalHide(){
   document.getElementById("closeModalBg").classList.remove("active");
 }
 function updateDiff(){
-  const shift = getActiveShift();
+  const shift = getActiveShiftDoc();
   if(!shift) return;
   const { balance } = computeTotals(shift);
   const actualStr = document.getElementById("closeActual").value;
@@ -651,29 +846,44 @@ function updateDiff(){
     box.textContent = "Kurang " + fmtRp(Math.abs(diff)) + " dari saldo sistem.";
   }
 }
-function confirmCloseShift(){
-  const shift = getActiveShift();
-  if(!shift) return;
+async function confirmCloseShift(){
+  if(!activeShiftId) return;
   const actualStr = document.getElementById("closeActual").value;
   if(actualStr === ""){ toast("Isi jumlah kas fisik terlebih dahulu"); return; }
-  shift.actualCash = Number(actualStr);
-  shift.note = document.getElementById("closeNote").value.trim();
-  shift.closed = true;
-  shift.closedAt = new Date().toISOString();
-  saveDB();
-  closeModalHide();
-  renderKasir();
-  toast("Shift " + shift.shiftNumber + " ditutup");
+  const noteVal = document.getElementById("closeNote").value.trim();
+  const { db, doc, runTransaction } = window.__fb;
+  const shiftId = activeShiftId;
+  const shiftRef = doc(db, "shifts", shiftId);
+  const metaRef = doc(db, "meta", "activeShift");
+  try{
+    await runTransaction(db, async (tx) => {
+      const metaSnap = await tx.get(metaRef);
+      if(!metaSnap.exists() || metaSnap.data().shiftId !== shiftId){
+        throw new Error("Shift ini sudah ditutup (mungkin dari perangkat lain)");
+      }
+      tx.update(shiftRef, {
+        closed: true,
+        closedAt: new Date().toISOString(),
+        actualCash: Number(actualStr),
+        note: noteVal
+      });
+      tx.set(metaRef, { shiftId: null });
+    });
+    closeModalHide();
+    toast("Shift ditutup");
+  }catch(e){
+    toast("Gagal menutup shift: " + e.message);
+  }
 }
 
 /* ---------- History ---------- */
 function renderHistory(){
   const list = document.getElementById("historyList");
-  if(db.shifts.length === 0){
+  if(shiftsCache.length === 0){
     list.innerHTML = `<div class="empty">Belum ada riwayat shift.</div>`;
     return;
   }
-  list.innerHTML = db.shifts.map(s=>{
+  list.innerHTML = shiftsCache.map(s=>{
     const { totalIn, totalOut, balance } = computeTotals(s);
     const dateStr = new Date(s.date).toLocaleDateString("id-ID",{day:"2-digit",month:"short",year:"numeric"});
     const statusLabel = s.closed ? "Ditutup" : "Aktif";
@@ -693,26 +903,40 @@ function renderHistory(){
 }
 
 function showDetail(shiftId){
-  const shift = db.shifts.find(s=>s.id===shiftId);
+  const shift = shiftsCache.find(s=>s.id===shiftId);
   if(!shift) return;
+  if(unsubDetailTx){ unsubDetailTx(); unsubDetailTx = null; }
+  detailShiftId = shiftId;
+  detailShiftTx = [];
+  renderDetailCard(shift);
+  showView("detail");
+  const { db, collection, query, orderBy, onSnapshot } = window.__fb;
+  const txQ = query(collection(db, "shifts", shiftId, "transactions"), orderBy("time", "desc"));
+  unsubDetailTx = onSnapshot(txQ, (snap) => {
+    detailShiftTx = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    const latest = shiftsCache.find(s=>s.id===shiftId) || shift;
+    renderDetailCard(latest);
+  });
+}
+
+function renderDetailCard(shift){
   const { totalIn, totalOut, balance } = computeTotals(shift);
   const dateStr = new Date(shift.date).toLocaleDateString("id-ID",{weekday:"long",day:"2-digit",month:"long",year:"numeric"});
   const openTime = new Date(shift.date).toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit"});
   const closeTime = shift.closedAt ? new Date(shift.closedAt).toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit"}) : "-";
 
   let diffHtml = "";
-  if(shift.closed && shift.actualCash !== null){
+  if(shift.closed && shift.actualCash !== null && shift.actualCash !== undefined){
     const diff = shift.actualCash - balance;
-    const cls = diff === 0 ? "diff-ok" : "diff-bad";
     const label = diff === 0 ? "Sesuai" : (diff > 0 ? "Lebih " + fmtRp(diff) : "Kurang " + fmtRp(Math.abs(diff)));
     diffHtml = `
       <div class="stat"><div class="label">Kas Fisik Dihitung</div><div class="value">${fmtRp(shift.actualCash)}</div></div>
       <div class="stat"><div class="label">Selisih</div><div class="value">${label}</div></div>`;
   }
 
-  const txHtml = shift.transactions.length === 0
+  const txHtml = detailShiftTx.length === 0
     ? `<div class="empty">Tidak ada transaksi.</div>`
-    : shift.transactions.slice().reverse().map(t=>{
+    : detailShiftTx.map(t=>{
         const time = new Date(t.time).toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit"});
         return `<div class="tx-item">
           <div class="tx-dot ${t.type}">${t.type==="in" ? "↓" : "↑"}</div>
@@ -729,7 +953,7 @@ function showDetail(shiftId){
     <div class="close-note">${dateStr}<br>Buka ${openTime} &nbsp;·&nbsp; Tutup ${closeTime}</div>
     <div class="summary-grid">
       <div class="stat"><div class="label">Modal Awal</div><div class="value">${fmtRp(shift.openingBalance)}</div></div>
-      <div class="stat"><div class="label">Transaksi</div><div class="value">${shift.transactions.length}</div></div>
+      <div class="stat"><div class="label">Transaksi</div><div class="value">${detailShiftTx.length}</div></div>
       <div class="stat"><div class="label">Uang Masuk</div><div class="value" style="color:var(--green)">${fmtRp(totalIn)}</div></div>
       <div class="stat"><div class="label">Uang Keluar</div><div class="value" style="color:var(--red)">${fmtRp(totalOut)}</div></div>
       ${diffHtml}
@@ -739,29 +963,27 @@ function showDetail(shiftId){
     <div class="section-title">Daftar Transaksi</div>
     ${txHtml}
   `;
-  showView("detail");
 }
 
 /* ---------- Statistik per kasir ---------- */
 function renderStatistik(){
   const list = document.getElementById("statistikList");
-  if(db.shifts.length === 0){
+  if(shiftsCache.length === 0){
     list.innerHTML = `<div class="empty">Belum ada riwayat shift untuk dihitung.</div>`;
     return;
   }
   const byCashier = {};
-  db.shifts.forEach(s=>{
+  shiftsCache.forEach(s=>{
     const key = s.cashier.trim().toLowerCase();
     if(!byCashier[key]){
       byCashier[key] = { name: s.cashier.trim(), shiftCount: 0, totalIn: 0, totalOut: 0, totalSelisih: 0 };
     }
     const entry = byCashier[key];
-    const { totalIn, totalOut } = computeTotals(s);
+    const { totalIn, totalOut, balance } = computeTotals(s);
     entry.shiftCount += 1;
     entry.totalIn += totalIn;
     entry.totalOut += totalOut;
-    if(s.closed && s.actualCash !== null){
-      const { balance } = computeTotals(s);
+    if(s.closed && s.actualCash !== null && s.actualCash !== undefined){
       entry.totalSelisih += (s.actualCash - balance);
     }
   });
@@ -792,25 +1014,34 @@ function renderStatistik(){
 }
 
 /* ---------- Export ---------- */
-function exportCSV(){
-  if(db.shifts.length === 0){ toast("Belum ada data untuk diekspor"); return; }
-  let rows = [["Tanggal","Shift","Kasir","Modal Awal","Tipe","Jumlah","Keterangan","Kategori","Waktu Transaksi","Status Shift","Kas Fisik","Saldo Sistem"]];
-  db.shifts.forEach(s=>{
-    const { balance } = computeTotals(s);
-    const dateStr = new Date(s.date).toLocaleDateString("id-ID");
-    if(s.transactions.length === 0){
-      rows.push([dateStr, s.shiftNumber, s.cashier, s.openingBalance, "", "", "", "", "", s.closed?"Ditutup":"Aktif", s.actualCash ?? "", balance]);
-    }else{
-      s.transactions.slice().reverse().forEach(t=>{
-        rows.push([
-          dateStr, s.shiftNumber, s.cashier, s.openingBalance,
-          t.type==="in" ? "Masuk" : "Keluar", t.amount, t.desc, t.category,
-          new Date(t.time).toLocaleTimeString("id-ID"),
-          s.closed?"Ditutup":"Aktif", s.actualCash ?? "", balance
-        ]);
-      });
+async function exportCSV(){
+  if(shiftsCache.length === 0){ toast("Belum ada data untuk diekspor"); return; }
+  toast("Menyiapkan data ekspor...");
+  const { db, collection, query, orderBy, getDocs } = window.__fb;
+  let rows = [["Tanggal","Shift","Kasir","Modal Awal","Tipe","Jumlah","Keterangan","Kategori","Waktu Transaksi","Dicatat Oleh","Status Shift","Kas Fisik","Saldo Sistem"]];
+  try{
+    for(const s of shiftsCache){
+      const { balance } = computeTotals(s);
+      const dateStr = new Date(s.date).toLocaleDateString("id-ID");
+      const txSnap = await getDocs(query(collection(db, "shifts", s.id, "transactions"), orderBy("time", "asc")));
+      if(txSnap.empty){
+        rows.push([dateStr, s.shiftNumber, s.cashier, s.openingBalance, "", "", "", "", "", "", s.closed?"Ditutup":"Aktif", s.actualCash ?? "", balance]);
+      }else{
+        txSnap.forEach(d=>{
+          const t = d.data();
+          rows.push([
+            dateStr, s.shiftNumber, s.cashier, s.openingBalance,
+            t.type==="in" ? "Masuk" : "Keluar", t.amount, t.desc, t.category,
+            new Date(t.time).toLocaleTimeString("id-ID"), t.by || "",
+            s.closed?"Ditutup":"Aktif", s.actualCash ?? "", balance
+          ]);
+        });
+      }
     }
-  });
+  }catch(e){
+    toast("Gagal mengekspor: " + e.message);
+    return;
+  }
   const csv = rows.map(r=>r.map(v=>{
     const s = String(v ?? "");
     return /[",\n]/.test(s) ? '"' + s.replace(/"/g,'""') + '"' : s;
@@ -835,25 +1066,56 @@ function saveSettings(){
   applyTheme();
   toast("Pengaturan disimpan");
 }
-function resetAllData(){
-  if(!confirm("Semua data shift dan transaksi akan dihapus permanen. Lanjutkan?")) return;
-  if(!confirm("Ini tidak bisa dibatalkan. Yakin hapus semua data?")) return;
-  db = { shifts: [] };
-  saveDB();
-  renderKasir();
-  renderHistory();
-  toast("Semua data telah dihapus");
+
+async function resetAllData(){
+  if(!confirm("PERINGATAN: ini akan menghapus SEMUA riwayat shift dan transaksi milik SEMUA kasir dari cloud, permanen. Lanjutkan?")) return;
+  if(!confirm("Sekali lagi untuk memastikan: hapus SELURUH data toko untuk semua orang? Ini tidak bisa dibatalkan.")) return;
+  const { db, collection, doc, getDocs, writeBatch } = window.__fb;
+  try{
+    toast("Menghapus data...");
+    const shiftsSnap = await getDocs(collection(db, "shifts"));
+    for(const shiftDoc of shiftsSnap.docs){
+      const txSnap = await getDocs(collection(db, "shifts", shiftDoc.id, "transactions"));
+      const txDocs = txSnap.docs;
+      for(let i=0; i<txDocs.length; i+=400){
+        const batch = writeBatch(db);
+        txDocs.slice(i, i+400).forEach(t => batch.delete(t.ref));
+        await batch.commit();
+      }
+      await writeBatch(db).delete(shiftDoc.ref).commit();
+    }
+    const metaRef = doc(db, "meta", "activeShift");
+    await writeBatch(db).set(metaRef, { shiftId: null }).commit();
+    toast("Semua data telah dihapus");
+  }catch(e){
+    toast("Gagal menghapus data: " + e.message);
+  }
 }
 
 /* ---------- Init ---------- */
-function init(){
+function initUI(){
   document.getElementById("shopName").textContent = settings.shopName || "Kas Toko";
   applyTheme();
   tickClock();
   setTxType("in");
-  renderKasir();
 }
-init();
+initUI();
+
+window.addEventListener("firebase-ready", () => {
+  const { auth, onAuthStateChanged } = window.__fb;
+  onAuthStateChanged(auth, (user) => {
+    currentUser = user;
+    if(user){
+      showApp();
+      showView("kasir");
+      startShiftsListener();
+      startActiveShiftListener();
+    }else{
+      stopAllListeners();
+      showLogin();
+    }
+  });
+});
 </script>
 </body>
 </html>
