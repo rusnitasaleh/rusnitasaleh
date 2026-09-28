@@ -82,6 +82,23 @@ Setelah `firebase-config.js` diisi, upload **seluruh folder** `kas-toko` (bukan 
 
 Link itulah yang dibagikan ke semua kasir untuk dibookmark.
 
+**Penting:** hosting harus lewat HTTPS agar bisa dipasang sebagai aplikasi di HP (lihat bagian berikutnya) — Netlify dan GitHub Pages keduanya otomatis HTTPS, jadi tidak perlu pengaturan tambahan.
+
+## Memasang sebagai Aplikasi di HP Android
+
+Aplikasi ini sudah dibuat sebagai **PWA (Progressive Web App)** — begitu di-hosting di link HTTPS, aplikasi bisa dipasang di layar utama HP dan terbuka layaknya aplikasi asli (ikon sendiri, layar penuh tanpa address bar browser), **tanpa lewat Play Store dan tanpa biaya apapun**.
+
+Cara pasang di Android (Chrome):
+
+1. Buka link aplikasi Anda di Chrome.
+2. Login seperti biasa.
+3. Buka menu **Pengaturan** di dalam aplikasi, lalu tekan tombol **📲 Pasang Aplikasi** yang muncul di kartu "Pasang di HP".
+   - Kalau tombol itu tidak muncul, buka menu titik tiga (⋮) Chrome di pojok kanan atas, lalu pilih **"Add to Home screen"** atau **"Install app"**.
+4. Konfirmasi pemasangan. Ikon "Kas Toko" akan muncul di layar utama HP seperti aplikasi lainnya.
+5. Lakukan ini di HP setiap kasir yang memakai aplikasi ini, sekali saja per HP.
+
+Setelah terpasang, aplikasi tetap memakai data yang sama persis dari Firebase — ini bukan salinan terpisah, hanya cara membukanya yang lebih cepat dan terasa seperti aplikasi asli.
+
 ## Cara Pakai Sehari-hari
 
 1. Buka link aplikasinya, **masuk (login)** dengan email + kata sandi yang diberikan pemilik toko.
@@ -91,6 +108,26 @@ Link itulah yang dibagikan ke semua kasir untuk dibookmark.
 5. Tab **Riwayat**: semua shift dari semua kasir & semua perangkat, dengan rincian transaksi, cetak laporan, dan ekspor ke CSV.
 6. Tab **Statistik**: peringkat kasir berdasarkan total uang masuk yang mereka catat.
 7. Tab **Pengaturan**: nama toko, tema, keluar dari akun (logout), atau hapus semua data (hanya untuk situasi darurat — ini menghapus data milik semua kasir).
+
+## Membuat Laporan (di HP maupun komputer)
+
+Ada dua jenis laporan, keduanya ada di tab **Riwayat**:
+
+### Laporan per shift (cetak / simpan PDF)
+
+1. Buka tab **Riwayat**, tekan salah satu shift untuk membuka rinciannya.
+2. Tekan tombol **🖨️ Cetak Laporan** di bagian bawah.
+3. Di Android, ini akan membuka dialog cetak bawaan HP:
+   - Pilih **"Save as PDF"** di bagian tujuan/printer untuk menyimpannya sebagai file PDF di HP (bisa dibuka lagi kapan saja, atau dikirim lewat WhatsApp/email).
+   - Atau pilih printer yang terhubung ke HP kalau ingin mencetak langsung ke kertas.
+4. Ini bekerja sama saja baik dibuka lewat browser maupun lewat aplikasi yang sudah dipasang di layar utama.
+
+### Laporan lengkap semua shift (Excel/CSV)
+
+1. Masih di tab **Riwayat**, tekan tombol **Ekspor CSV**.
+2. File `kas-toko-YYYY-MM-DD.csv` akan tersimpan ke folder **Downloads** HP, berisi seluruh transaksi dari seluruh shift dan kasir.
+3. Buka file itu lewat aplikasi **Google Sheets** atau **Excel** di HP (atau kirim ke komputer) untuk melihat, menyaring, atau mengolahnya lebih lanjut.
+4. Gunakan ini secara berkala (misalnya tiap akhir bulan) sebagai cadangan data sekaligus laporan keuangan lengkap.
 
 ## Tentang Data & Akses
 
@@ -112,3 +149,4 @@ Link itulah yang dibagikan ke semua kasir untuk dibookmark.
 - Statistik peringkat kasir berdasarkan uang masuk.
 - Ekspor riwayat ke CSV.
 - Tampilan mobile-friendly, mendukung tema terang/gelap.
+- Bisa dipasang sebagai aplikasi di layar utama HP Android (PWA), gratis tanpa Play Store.

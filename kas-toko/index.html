@@ -4,6 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
 <title>Kas Toko</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2563eb">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
 <style>
   :root{
     --bg:#f4f5f7;
@@ -366,6 +371,11 @@
       <h2>Akun</h2>
       <div class="account-row">Masuk sebagai <b id="accountEmail">-</b></div>
       <button class="btn btn-outline" onclick="doLogout()">Keluar</button>
+    </div>
+    <div class="card" id="installCard" style="display:none;">
+      <h2>Pasang di HP</h2>
+      <div class="close-note">Pasang Kas Toko sebagai aplikasi di layar utama HP, terpisah dari browser.</div>
+      <button class="btn btn-primary" onclick="installApp()">📲 Pasang Aplikasi</button>
     </div>
     <div class="card">
       <h2>Pengaturan</h2>
@@ -1090,6 +1100,35 @@ async function resetAllData(){
   }catch(e){
     toast("Gagal menghapus data: " + e.message);
   }
+}
+
+/* ---------- Install as app (PWA) ---------- */
+let deferredInstallPrompt = null;
+window.addEventListener("beforeinstallprompt", (e) => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  const card = document.getElementById("installCard");
+  if(card) card.style.display = "block";
+});
+async function installApp(){
+  if(!deferredInstallPrompt){
+    toast("Buka menu browser lalu pilih \"Add to Home screen\" / \"Install app\"");
+    return;
+  }
+  deferredInstallPrompt.prompt();
+  await deferredInstallPrompt.userChoice;
+  deferredInstallPrompt = null;
+  document.getElementById("installCard").style.display = "none";
+}
+window.addEventListener("appinstalled", () => {
+  const card = document.getElementById("installCard");
+  if(card) card.style.display = "none";
+  toast("Kas Toko terpasang di HP");
+});
+if("serviceWorker" in navigator){
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("sw.js").catch(()=>{ /* ignore: app still works without it */ });
+  });
 }
 
 /* ---------- Init ---------- */
